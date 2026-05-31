@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8">
     <title>Lot Draw App</title>
-    <link rel="stylesheet" href="./style.css">
+    
 
   </head>
     
@@ -14,10 +14,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lot Draw App</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Lot Draw Simulator</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #add-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        #add-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .list-section {
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #f3f4f6;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .list-section h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #4b5563;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #items-list {
+            list-style: none;
+            padding: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        #items-list li {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .delete-btn {
+            background: none;
+            color: var(--danger-color);
+            padding: 2px 6px;
+            font-size: 0.85rem;
+        }
+
+        .secondary-btn {
+            background-color: transparent;
+            color: var(--danger-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border: 1px solid var(--danger-color);
+            width: 100%;
+        }
+
+        .secondary-btn:hover {
+            background-color: #fef2f2;
+        }
+
+        .primary-btn {
+            background-color: var(--success-color);
+            color: white;
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        .primary-btn:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+        }
+
+        .primary-btn:active {
+            transform: translateY(1px);
+        }
+
+        #result-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #ecfdf5;
+            border: 2px dashed var(--success-color);
+            border-radius: 12px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #winner-display {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #065f46;
+            margin-top: 0.5rem;
+        }
+
+        /* Drumroll / Shuffle suspense effect */
+        .shuffling {
+            animation: pulse 0.15s infinite alternate;
+            color: #9ca3af !important;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+    </style>
 </head>
 <body>
+
     <div class="container">
         <h1>🎟️ Lot Draw Simulator</h1>
         <p class="subtitle">Enter names or items to draw a random winner!</p>
@@ -43,11 +231,109 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // State management
+        let items = [];
+
+        // DOM Elements
+        const itemInput = document.getElementById('item-input');
+        const addBtn = document.getElementById('add-btn');
+        const itemsList = document.getElementById('items-list');
+        const countSpan = document.getElementById('count');
+        const clearBtn = document.getElementById('clear-btn');
+        const drawBtn = document.getElementById('draw-btn');
+        const resultContainer = document.getElementById('result-container');
+        const winnerDisplay = document.getElementById('winner-display');
+
+        // Add Item Function
+        function addItem() {
+            const value = itemInput.value.trim();
+            
+            if (value === "") return;
+            
+            items.push(value);
+            itemInput.value = "";
+            itemInput.focus();
+            
+            updateUI();
+        }
+
+        // Delete Individual Item
+        function deleteItem(index) {
+            items.splice(index, 1);
+            updateUI();
+        }
+
+        // Clear All Items
+        function clearAll() {
+            items = [];
+            resultContainer.classList.add('hidden');
+            updateUI();
+        }
+
+        // Sync State with HTML Display
+        function updateUI() {
+            itemsList.innerHTML = "";
+            
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${item}</span>
+                    <button class="delete-btn" onclick="deleteItem(${index})">✕</button>
+                `;
+                itemsList.appendChild(li);
+            });
+            
+            countSpan.textContent = items.length;
+        }
+
+        // Draw Winner Logic with Shuffling Effect
+        function drawWinner() {
+            if (items.length === 0) {
+                alert("Please add some items first!");
+                return;
+            }
+
+            resultContainer.classList.remove('hidden');
+            winnerDisplay.classList.add('shuffling');
+            drawBtn.disabled = true;
+
+            let counter = 0;
+            const shuffleInterval = setInterval(() => {
+                // Show random items rapidly to create suspense
+                const temporaryRandomIndex = Math.floor(Math.random() * items.length);
+                winnerDisplay.textContent = items[temporaryRandomIndex];
+                counter++;
+
+                // Stop shuffling after 12 iterations
+                if (counter > 12) {
+                    clearInterval(shuffleInterval);
+                    
+                    // Pick the final actual winner
+                    const finalIndex = Math.floor(Math.random() * items.length);
+                    winnerDisplay.textContent = items[finalIndex];
+                    
+                    winnerDisplay.classList.remove('shuffling');
+                    drawBtn.disabled = false;
+                }
+            }, 150);
+        }
+
+        // Event Listeners
+        addBtn.addEventListener('click', addItem);
+        clearBtn.addEventListener('click', clearAll);
+        drawBtn.addEventListener('click', drawWinner);
+
+        // Allow pressing "Enter" inside input box to add item
+        itemInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+    </script>
 </body>
 </html>
-    <script  src="./script.js"></script>
-
+    
   </body>
   
 </html>
